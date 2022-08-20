@@ -5,6 +5,8 @@
 // @description Autofills the subscript with Tab
 // @grant       none
 // @match       https://*.desmos.com/calculator*
+// @downloadURL https://github.com/MathEnthusiast314/AutoFillSubscript/raw/main/AutoFillSubscript.user.js
+// @updateURL https://github.com/MathEnthusiast314/AutoFillSubscript/raw/main/AutoFillSubscript.user.js
 // ==/UserScript==
 
 (function() {
