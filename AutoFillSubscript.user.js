@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        AutoFillSubscript
-// @version     1.0
+// @version     2.0
 // @author      MathEnthusiast314
 // @description Autofills the subscript with Tab
 // @grant       none
@@ -11,6 +11,10 @@
 
 (function() {
     'use strict';
+
+Number.prototype.mod = function(b) {
+    return ((this % b) + b) % b;
+}
 
 function start(){
     var Calc=window.Calc
@@ -34,30 +38,48 @@ function start(){
         context.updateAnalysis();
         return context;
     }
-    function AutoFill(sub,snippedLatex){
+    var save=[0,''];
+    function AutoFill(sub,snippedLatex,key){
         var c00=computeContext()
         if (Calc.isAnyExpressionSelected){
             var search=snippedLatex.match(`[a-zA-Z0-9]_\\{${sub}\\}$`)
             if (search){
                 search=search[0].replace(/[{}]/g,'');
                 var extension=Object.keys(c00.frame).filter(x=>x.indexOf(search)==0);
-                if (extension[0]){
-                    return(extension[0].replace(search,''))
+                if (extension[save[0].mod(extension.length)]){
+                    var result=extension[save[0].mod(extension.length)].replace(search,'');
+                    save[1]=result;
+                    return(result);
                 }
             }
         }
     }
-    document.addEventListener('keydown', function(event) {
-        if (event.keyCode==9&&Calc.focusedMathQuill){
-            var message=((((Calc.focusedMathQuill||{}).mq||{}).__controller||{}).aria||{}).msg
+    document.addEventListener('keydown', async function(event) {
+        if ((event.keyCode==9||(event.keyCode==38&&event.altKey)||(event.keyCode==40&&event.altKey))&&Calc.focusedMathQuill){
+            //
+            if (save[1]&&(event.keyCode==38||event.keyCode==40)){
+                (event.keyCode==38)&&save[0]++;
+                (event.keyCode==40)&&save[0]--;
+                for(var ij=0; ij<save[1].length; ij++){
+                    Calc.focusedMathQuill.simulateKeypress('Backspace')
+                }
+                Calc.focusedMathQuill.simulateKeypress('Right');
+            }
+            //
+            var message=((((Calc.focusedMathQuill||{}).mq||{}).__controller||{}).aria||{}).msg;
             var reg=(message+[]).match(/after Subscript, (.*) \, Baseline/)
-            var sel=Calc.focusedMathQuill.selection()
+            var sel=Calc.focusedMathQuill.selection();
             if (reg&&sel){
-                var auto=AutoFill(reg[1].replace(/[ \"]/g,''),sel.latex.substring(0,sel.startIndex));
+                var auto=AutoFill(reg[1].replace(/[ \"]/g,''),sel.latex.substring(0,sel.startIndex),event.keyCode);
                 auto?Calc.focusedMathQuill.typedText('_'+auto):''
             }
+        }else{
+            save=[0,''];
         }
     });
+    document.addEventListener('mousedown', async function(event2) {
+        save=[0,''];
+    })
 }
 function tryStart(){
 	  if (window.Calc !== undefined) {
