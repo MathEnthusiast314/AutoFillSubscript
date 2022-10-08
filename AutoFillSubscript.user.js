@@ -38,7 +38,7 @@ function start(){
         context.updateAnalysis();
         return context;
     }
-    var save=[0,''];
+    var save=[0,'','first'];
     function AutoFill(sub,snippedLatex,key){
         var c00=computeContext()
         if (Calc.isAnyExpressionSelected){
@@ -65,6 +65,9 @@ function start(){
             }
             //
             (event.keyCode==9) && (save[0]=0);
+            (save[2]!='first')&&(event.keyCode==38)&&save[0]++;
+            (save[2]!='first')&&(event.keyCode==40)&&save[0]--;
+            save[2]='notFirst';
             var message=((((Calc.focusedMathQuill||{}).mq||{}).__controller||{}).aria||{}).msg;
             var reg=(message+[]).match(/after Subscript, (.*) \, Baseline/)
             var sel=Calc.focusedMathQuill.selection();
@@ -73,15 +76,12 @@ function start(){
                 Calc.focusedMathQuill.typedText('_');
                 auto&&Calc.focusedMathQuill.typedText(auto);
             }
-            //
-            (event.keyCode==38)&&save[0]++;
-            (event.keyCode==40)&&save[0]--;
         }else{
-            save=[0,''];
+            save=[0,'','first'];
         }
     });
     document.addEventListener('mousedown', async function(event2) {
-        save=[0,''];
+        save=[0,'','first'];
     })
 }
 function tryStart(){
