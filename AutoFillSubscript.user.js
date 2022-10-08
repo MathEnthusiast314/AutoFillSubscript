@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        AutoFillSubscript
-// @version     2.0
+// @version     2.1
 // @author      MathEnthusiast314
 // @description Autofills the subscript with Tab
 // @grant       none
@@ -57,22 +57,25 @@ function start(){
     document.addEventListener('keydown', async function(event) {
         if ((event.keyCode==9||(event.keyCode==38&&event.altKey)||(event.keyCode==40&&event.altKey))&&Calc.focusedMathQuill){
             //
-            if (save[1]&&(event.keyCode==38||event.keyCode==40)){
-                (event.keyCode==38)&&save[0]++;
-                (event.keyCode==40)&&save[0]--;
+            if ((event.keyCode==38||event.keyCode==40)){
                 for(var ij=0; ij<save[1].length; ij++){
                     Calc.focusedMathQuill.simulateKeypress('Backspace')
                 }
                 Calc.focusedMathQuill.simulateKeypress('Right');
             }
             //
+            (event.keyCode==9) && (save[0]=0);
             var message=((((Calc.focusedMathQuill||{}).mq||{}).__controller||{}).aria||{}).msg;
             var reg=(message+[]).match(/after Subscript, (.*) \, Baseline/)
             var sel=Calc.focusedMathQuill.selection();
             if (reg&&sel){
                 var auto=AutoFill(reg[1].replace(/[ \"]/g,''),sel.latex.substring(0,sel.startIndex),event.keyCode);
-                auto?Calc.focusedMathQuill.typedText('_'+auto):''
+                Calc.focusedMathQuill.typedText('_');
+                auto&&Calc.focusedMathQuill.typedText(auto);
             }
+            //
+            (event.keyCode==38)&&save[0]++;
+            (event.keyCode==40)&&save[0]--;
         }else{
             save=[0,''];
         }
